@@ -1,9 +1,8 @@
-arr = [1, 2, 2, 2]
-new_arr = []
 
-for i in arr:
-    if i not in new_arr:
-        new_arr.append(i)
+def remove_duplicates(arr):
+    return list(set(arr))
 
-print(new_arr)
-
+# Example usage:
+arr = [1, 2, 2, 3, 4, 4, 5]
+arr_without_duplicates = remove_duplicates(arr)
+print(arr_without_duplicates)
