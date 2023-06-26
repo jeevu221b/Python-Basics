@@ -1,21 +1,16 @@
 # Program to remove duplicates from a list
-arr = [2,2,2,2,2,2,2,2,2]
+def dup_remove(array):
+    print("last")
+    for i in range(len(array)):
+        if array[i] not in new_arr:
+            new_arr.append(array[i])
+            return (new_arr)
+
+
+array = [2, 2, 2, 2, 2, 2, 2, 2, 2]
 new_arr = []
-for i in range(len(arr)):
-    if arr[i] not in new_arr:
-        new_arr.append(arr[i])  
+print("First")
+dup_remove(array)
+print("second")
+# without = new_arr
 print(new_arr)
-
-        
-
-
-   
-        
-
-    
-        
-    
-        
-    
-    
-    
