@@ -1,14 +1,19 @@
-users = {"logan": {"address": {"pinCode": 110019}}}
-users["logan"]["address"]["pinCode"] = 4848448
-users["john"] = {"address": {"pincode": 737393}}
+users = {}
 
-print(users)
-
-# while True:
-#     Name = input("Enter the name:")
-#     pin = input("Enter the pincode:")
-#     ask = input("Are there more names and pincodes?")
-#     users["name"] = [Name]
-#     if ask != "yes":
-#         break
+# users["john"] = {"age": 20}
+# if users["john"]:
+#     users["john"] = {"address": {"pincode": 0}}
 # print(users)
+
+while True:
+    Name = input("Enter your name:")
+    ask = input("Are there more users")
+    if Name in users:
+        users[Name]["attendance"] += 1
+    else:
+        users[Name] = {"attendance": 1}
+    print(users)
+
+    if ask != "yes":
+        break
+print(users)
