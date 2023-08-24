@@ -4,6 +4,3 @@ def getPoint(decimal):
     else:
         output = decimal[2]
         return output
-
-
-val = getPoint("2.573334444")

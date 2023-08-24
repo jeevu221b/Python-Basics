@@ -4,9 +4,9 @@ from pathlib import Path
 
 
 def mFolder(point, user):
-    print(point, "pint")
-    # Directory
-    directory = point
+    ver = int(user["version"])
+    print(ver)
+    directory = str(ver) + "." + point
     # Parent Directory path
     parent_dir = "/Users/santo/Downloads/Python-Basics/users"
     # Path
@@ -25,4 +25,4 @@ def mFolder(point, user):
     # join directory and file path
     with open(os.path.join(path, file_name), "w") as fp:
         # uncomment below line if you want to create an empty file
-        fp.write("This is a new line")
+        fp.write(str(user))
