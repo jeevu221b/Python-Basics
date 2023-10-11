@@ -1,0 +1,7 @@
+Add:
+1. Read the file
+2. Store the content of the file in a variable(file)
+    file ---> [{"title": "Skate", "status": "done"}]
+3. new_task = {"title": "plant trees", "status" : "done"}
+4. Append the new_task to the file
+    file.append(new_task)
