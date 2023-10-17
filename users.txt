@@ -1,2 +1,0 @@
-[{'email': 'a@b.c', 'password': 'dueuriir', 'firstname': '3', 'lastname': '3', 'age': 3, 'attendance': 2}, {'email': 'c@d.d', 'password': 'ddjnfn', 'firstname': '3', 'lastname': '3', 'age': 3, 'attendance': 1}, {'email': 's@s.vp', 'password': 'fhhdhhd', 'firstname': 'ee', 'lastname': 'e', 'age': 3, 'attendance': 1}, {'email': 'xyz@c.d', 'password': 'ushduhdusdh', 'firstname': '6', 'lastname': '6', 'age': 6, 'attendance': 1}]
-
