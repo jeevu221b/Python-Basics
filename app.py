@@ -1,6 +1,7 @@
 import sqlite3
 import sys
 from db import userInfo
+from email import emailChecker
 
 # Building the connection with the database
 conn = sqlite3.connect("app.db")
@@ -23,7 +24,7 @@ try:
                 break
 
     if cmd[1] == "2":
-        user_email = input("Enter your email address: ")
+        user_email = emailChecker()
         user_password = input("Enter the password: ")
         # for users in info:
         #     if user_email == users[2] and user_password == users[3]:
@@ -40,7 +41,11 @@ try:
             print(f"Login succesful :)")
             r = input("Press 'y' to view your tasks: ")
             if r == "y":
-                print(user)
+                for uInfo in user:
+                    fKey = uInfo[0]
+                print(f"fKey = {fKey}")
+                cursor.execute("SELECT * FROM tasks WHERE user_id = ?", (str(fKey)))
+                print(cursor.fetchall())               
         else:
             print("Login failed :(")
 
