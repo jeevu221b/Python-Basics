@@ -1,60 +1,103 @@
 import sqlite3
 import sys
-from db import userInfo
-from email import emailChecker
+from users import getUser
+import time
+from mac import get_mac_address
 
 # Building the connection with the database
 conn = sqlite3.connect("app.db")
 cursor = conn.cursor()
-
-# Getting the input from commandLine
+mac_address = get_mac_address()
 cmd = sys.argv
+
 try:
+    userId = ""
+    try:
+        if cmd[1] != "login" and cmd[1] and cmd[1] != "signup" and cmd[1] != "help":
+            cursor.execute("SELECT * FROM logged WHERE mac = ?", (mac_address,))
+            user =cursor.fetchall()
+            if user:
+                for info in user:
+                    loggedUser = info[0] 
+
+    except:
+        pass
+      
+    # Illustrates the working of this system  
     if cmd[1] == "help":
         print("Options: \n")
-        print("1. Input your info into the database")
-        print("2. Login")
-        print("3. Show database")
+        print("1. Sign up --> signup email password")
+        print("2. Login --> login email")
+        print("3. Create --> create taskname duedate")
+        print("4. List --> list")
 
-    if cmd[1] == "1":
-        while True:
-            info = userInfo()
-            res = input("Are there more users to add?(or 'q' to quit): ")
-            if res == "q":
-                break
+    if cmd[1] == "signup":
+        user_email = cmd[2]
+        user_password = cmd[3]
+        try:
+            user_id = getUser(user_email, user_password)
+        except:
+            print("Email already in the existence, try again :)")
 
-    if cmd[1] == "2":
-        user_email = emailChecker()
-        user_password = input("Enter the password: ")
-        # for users in info:
-        #     if user_email == users[2] and user_password == users[3]:
-        #         print("Login succesful :)")
-        #         loggedUser = users[0]
-        #         print(loggedUser)
+    if cmd[1] == "login":
+        user_email = cmd[2]
+        user_password = cmd[3]
         cursor.execute(
             "SELECT * FROM users WHERE user_email = ? AND user_password = ?",
             (user_email, user_password),
         )
-
         user = cursor.fetchall()
         if user:
             print(f"Login succesful :)")
-            r = input("Press 'y' to view your tasks: ")
-            if r == "y":
-                for uInfo in user:
-                    fKey = uInfo[0]
-                print(f"fKey = {fKey}")
-                cursor.execute("SELECT * FROM tasks WHERE user_id = ?", (str(fKey)))
-                print(cursor.fetchall())               
-        else:
-            print("Login failed :(")
-
-    if cmd[1] == "3":
-        k = input("Enter the secret key :) ")
-        if k == "123":
-            cursor.execute("SELECT * FROM users")
-            print(cursor.fetchall())
-
-
+            current_time = int(time.time())
+            for info in user:
+                user_id = info[0]
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS logged
+                (
+                    user_id INTEGER,
+                    lastlogin INTEGER,
+                    mac TEXT
+                )
+                """
+            )
+            
+            cursor.execute(
+            "INSERT INTO logged(user_id,lastlogin, mac) VALUES (?,?,?)",
+            (user_id, current_time, mac_address),
+            )
+            
+            conn.commit()
+            cursor.execute("SELECT * FROM logged")
+            print(cursor.fetchall(), "login")
+           
+            
+    if cmd[1] == "create":
+        taskname = cmd[2]
+        duedate = cmd[3]
+        print(loggedUser)
+        cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS tasks
+                (
+                    user_id INTEGER,
+                    taskname TEXT,
+                    duedate TEXT
+                )
+                """
+            )
+        cursor.execute(
+            "INSERT INTO tasks(user_id,taskname, duedate ) VALUES (?,?,?)",
+            (loggedUser, taskname, duedate))
+        conn.commit()
+        cursor.execute("SELECT * FROM tasks")
+        print(cursor.fetchall())
+        
+    if cmd[1] == "list":
+        cursor.execute("SELECT * FROM tasks where user_id = ?", (str(loggedUser)))
+        print("user_id, task, duedate")
+        print(cursor.fetchall())
+        
 except IndexError:
     print("Invalid input type :(")
