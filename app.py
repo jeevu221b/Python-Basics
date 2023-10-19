@@ -1,9 +1,10 @@
 import sqlite3
 import sys
 from users import getUser
-import time
 from mac import get_mac_address
 from datetime import datetime
+from notifyy import notifier
+import time
 
 # Building the connection with the database
 conn = sqlite3.connect("app.db")
@@ -15,8 +16,7 @@ try:
     userId = ""
     try:
         if cmd[1] != "login" and cmd[1] != "signup" and cmd[1] != "help":
-            cursor.execute(
-                "SELECT * FROM logged WHERE mac = ?", (mac_address,))
+            cursor.execute("SELECT * FROM logged WHERE mac = ?", (mac_address,))
             user = cursor.fetchall()
             if user:
                 for info in user:
@@ -25,14 +25,8 @@ try:
     except:
         pass
 
-    # Illustrates the working of this system
     if cmd[1] == "help":
-        print("Options: \n")
-        print("1. Sign up --> signup email password")
-        print("2. Login --> login email password")
-        print("3. Create --> create taskname duedate(hh:mm:ss)")
-        print("4. List --> list")
-        print("5. Notification --> notify task_id")
+        help.prompt()
 
     if cmd[1] == "signup":
         user_email = cmd[2]
@@ -100,7 +94,8 @@ try:
                 )
                 cursor.execute(
                     "INSERT INTO tasks(user_id,taskname, duedate ) VALUES (?,?,?)",
-                    (loggedUser, taskname, duedate))
+                    (loggedUser, taskname, duedate),
+                )
                 conn.commit()
                 cursor.execute("SELECT * FROM tasks")
                 print(cursor.fetchall())
@@ -111,20 +106,30 @@ try:
 
     if cmd[1] == "list":
         try:
-            cursor.execute("SELECT * FROM tasks where user_id = ?",
-                           (str(loggedUser)))
+            cursor.execute("SELECT * FROM tasks where user_id = ?", (str(loggedUser)))
             print("task_id, user_id, task, duedate")
             print(cursor.fetchall())
         except NameError:
             print("You're not logged in, log in first :)")
 
     if cmd[1] == "notify":
-        # task_id == cmd[2]
-        cursor.execute("SELECT * FROM tasks where user_id = ?",
-                       (str(loggedUser)))
-        print(" task_id, user_id, task, duedate")
-        print(cursor.fetchall())
-    
+        task_id = cmd[2]
+        cursor.execute("SELECT * FROM tasks where task_id = ?", (task_id))
+        task = cursor.fetchall()
+        for info in task:
+            duedate = info[3]
+            task = info[2]
+        while True:
+            current = datetime.now()
+            current_time = current.strftime("%H:%M:%S")
+            print(current_time)
+            if str(duedate) < current_time:
+                print("Task was in past :(")
+                break
+            elif str(duedate) == current_time:
+                notifier(task)
+                print("Inside notifier")
+                break
 
 
 except IndexError:
