@@ -1,6 +1,5 @@
 from notifypy import Notify
 
-
 def notifier(taskname):
     notification = Notify()
     notification.title = "Task Scheduler"
@@ -8,3 +7,4 @@ def notifier(taskname):
     notification.application_name = taskname
     # notification.icon = "logo.png"
     notification.send()
+

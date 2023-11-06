@@ -1,0 +1,11 @@
+# Ignore Python cache files
+__pycache__/
+
+# Ignore compiled Python files
+*.pyc
+*.pyo
+
+# Ignore IDE and editor-specific files and directories (e.g., .vscode, .idea, .pyc files)
+.vscode/
+.idea/
+*.pyc

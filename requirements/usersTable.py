@@ -1,11 +1,12 @@
+import sqlite3
+
+# Building the connection with the database, creating the database if not
+# already in the existence
+conn = sqlite3.connect("app.db")
+cursor = conn.cursor()
+
+
 def getUser(email, password):
-    import sqlite3
-
-    # Building the connection with the database, creating the database if not
-    # already in the existence
-    conn = sqlite3.connect("app.db")
-    cursor = conn.cursor()
-
     # Creating the users table
     cursor.execute(
         """

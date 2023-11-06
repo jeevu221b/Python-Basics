@@ -1,10 +1,14 @@
 import sqlite3
 import sys
-from users import getUser
-from mac import get_mac_address
+from requirements.usersTable import getUser
+from requirements.mac import get_mac_address
 from datetime import datetime
-from notifyy import notifier
-import time
+from requirements.notificationSender import notifier
+import requirements.loginTable as loginTable
+import requirements.help as help
+from requirements.loggedUser import getCurrentUser
+from requirements.writeLogs import errorsLogs
+from requirements.tasksTable import getTasks
 
 # Building the connection with the database
 conn = sqlite3.connect("app.db")
@@ -12,18 +16,10 @@ cursor = conn.cursor()
 mac_address = get_mac_address()
 cmd = sys.argv
 
-try:
-    userId = ""
-    try:
-        if cmd[1] != "login" and cmd[1] != "signup" and cmd[1] != "help":
-            cursor.execute("SELECT * FROM logged WHERE mac = ?", (mac_address,))
-            user = cursor.fetchall()
-            if user:
-                for info in user:
-                    loggedUser = info[0]
 
-    except:
-        pass
+try:
+    if cmd[1] != "login" and cmd[1] != "signup" and cmd[1] != "help":
+            loggedUser = getCurrentUser()
 
     if cmd[1] == "help":
         help.prompt()
@@ -33,45 +29,20 @@ try:
         user_password = cmd[3]
         try:
             user_id = getUser(user_email, user_password)
-        except:
+        except Exception as error:
             print("Email already in the existence, try again :)")
-
+            errorsLogs(error)
+            
+            
     if cmd[1] == "login":
         try:
             user_email = cmd[2]
             user_password = cmd[3]
-            cursor.execute(
-                "SELECT * FROM users WHERE user_email = ? AND user_password = ?",
-                (user_email, user_password),
-            )
-            user = cursor.fetchall()
-            if user:
-                print(f"Login succesful :)")
-                current_time = int(time.time())
-                for info in user:
-                    user_id = info[0]
-                cursor.execute(
-                    """
-                    CREATE TABLE IF NOT EXISTS logged
-                    (
-                        
-                        user_id INTEGER,
-                        lastlogin INTEGER,
-                        mac TEXT
-                    )
-                    """
-                )
-
-                cursor.execute(
-                    "INSERT INTO logged(user_id,lastlogin, mac) VALUES (?,?,?)",
-                    (user_id, current_time, mac_address),
-                )
-
-                conn.commit()
-                cursor.execute("SELECT * FROM logged")
-                print(cursor.fetchall(), "login")
-        except:
+            loginTable.logged(user_email, user_password, mac_address)
+        except Exception as error:
             print("No such user in the DB :(")
+            errorsLogs(str(error))
+            
 
     if cmd[1] == "create":
         try:
@@ -81,56 +52,57 @@ try:
                 duedate = datetime.strptime(duedate, "%H:%M:%S")
                 duedate = duedate.strftime("%H:%M:%S")
                 print(loggedUser)
-                cursor.execute(
-                    """
-                        CREATE TABLE IF NOT EXISTS tasks
-                        (
-                             task_id INTEGER PRIMARY KEY,
-                            user_id INTEGER,
-                            taskname TEXT,
-                            duedate TEXT
-                        )
-                        """
-                )
-                cursor.execute(
-                    "INSERT INTO tasks(user_id,taskname, duedate ) VALUES (?,?,?)",
-                    (loggedUser, taskname, duedate),
-                )
-                conn.commit()
-                cursor.execute("SELECT * FROM tasks")
-                print(cursor.fetchall())
-            except ValueError:
+                getTasks(loggedUser, taskname, duedate)
+            except ValueError as e:
                 print("Invalid time format. Please enter time in hh:mm:ss format.")
-        except NameError:
+                errorsLogs(e)
+        except NameError as e:
             print("You're not logged in, log in first :)")
-
+            errorsLogs(e)
+            
     if cmd[1] == "list":
         try:
+            print(str(loggedUser))
             cursor.execute("SELECT * FROM tasks where user_id = ?", (str(loggedUser)))
             print("task_id, user_id, task, duedate")
             print(cursor.fetchall())
-        except NameError:
+        except sqlite3.OperationalError as e:
+            print("No such table in existence, Please create table first :)")
+            errorsLogs(e)
+        except NameError as e:
             print("You're not logged in, log in first :)")
+            errorsLogs(e)
+            
 
-    if cmd[1] == "notify":
-        task_id = cmd[2]
-        cursor.execute("SELECT * FROM tasks where task_id = ?", (task_id))
-        task = cursor.fetchall()
-        for info in task:
-            duedate = info[3]
-            task = info[2]
-        while True:
-            current = datetime.now()
-            current_time = current.strftime("%H:%M:%S")
-            print(current_time)
-            if str(duedate) < current_time:
-                print("Task was in past :(")
-                break
-            elif str(duedate) == current_time:
-                notifier(task)
-                print("Inside notifier")
-                break
+    if cmd[1] == "users":
+        cursor.execute("SELECT * FROM users")
+        print(cursor.fetchall())
+
+    if cmd[1] == "logout":
+        user_id = cmd[2]
+        print(user_id)
+        cursor.execute("DELETE FROM logged WHERE user_id = ?", (user_id))
+        if conn.total_changes == 0:
+            print("User id didn't match :(")
+        else:
+            conn.commit()
+            cursor.execute("SELECT * FROM logged")
+            print(cursor.fetchall())
 
 
-except IndexError:
+except IndexError as e:
     print("Invalid input type :(")
+    errorsLogs(e)
+    
+    
+except sqlite3.OperationalError as e:
+    print("Something went wrong :(")
+    errorsLogs(e)
+except Exception as e:
+    print("Something went wrong :(")
+    errorsLogs(f"{str(error)}\n    type = {str(type(error))}")   
+    
+
+
+
+
